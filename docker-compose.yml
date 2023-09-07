@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+  
+  app:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    env_file:
+      - ./.env
+    entrypoint: /usr/src/app/entrypoint.sh
+    volumes:
+      - ./:/usr/src/app/  
+
+    ports:
+      - ${APP_PORT}:8000
+    depends_on:
+      - db
+      - redis
+  
+  redis:
+    image: redis:7.2.0
+
+    command: redis-server
+
+    depends_on:
+      - db
+    
+    volumes:
+      - redis-data:/var/lib/redis/data
+
+volumes:
+  postgres-data:
+  redis-data:
